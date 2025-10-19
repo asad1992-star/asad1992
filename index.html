@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VetClinic Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
+  }
+}
+</script>
+<style>
+  /* Hide number input arrows */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  /* Screen-only styles */
+  .print-only {
+    display: none;
+  }
+
+  @media print {
+    html, body {
+      height: auto;
+      overflow: visible;
+      background-color: white !important;
+      font-size: 10pt;
+    }
+
+    /* Hide all elements marked as non-printable */
+    aside, .print-hide, .no-print, .no-print-col {
+      display: none !important;
+    }
+    
+    /* Show elements marked as print-only */
+    .print-only {
+      display: block !important;
+    }
+
+    /* General print layout adjustments */
+    main {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd !important;
+      padding: 4px;
+    }
+    thead {
+      background-color: #f2f2f2 !important;
+      -webkit-print-color-adjust: exact; 
+      print-color-adjust: exact;
+    }
+    h1 {
+      font-size: 16pt;
+      margin-bottom: 1rem;
+    }
+    
+    /* When printing, make the modal content take up the whole page */
+    .modal-print-area {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      background: none !important;
+    }
+    .modal-print-area .modal-content-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+  }
+</style>
+</head>
+  <body class="bg-gray-100 text-gray-800">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "name": "VetClinic Management System",
+  "description": "A comprehensive, offline-first application for managing veterinary clinic operations, including customers, suppliers, inventory, invoices, and payments.",
+  "requestFramePermissions": []
+}
