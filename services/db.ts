@@ -95,6 +95,13 @@ class DBService {
             needsSave = true;
         }
 
+        if (this.data.clinicSettings && typeof this.data.clinicSettings.address === 'undefined') {
+            this.data.clinicSettings.address = '123 Vet Street, Animal City';
+            this.data.clinicSettings.phone = '555-123-4567';
+            this.data.clinicSettings.email = 'contact@vetclinic.com';
+            needsSave = true;
+        }
+
         if (!this.data.accountTransactions) {
             this.data.accountTransactions = [];
             this.data.counters.transaction = 1;
@@ -878,7 +885,7 @@ class DBService {
             // Create a default structure to merge against. This ensures any missing keys from older backups are initialized.
             const defaultData: DBData = {
                 products: [], customers: [], suppliers: [], invoices: [], payments: [], expenses: [], users: [],
-                clinicSettings: { name: 'VetClinic', logo: null },
+                clinicSettings: { name: 'VetClinic', logo: null, address: '', phone: '', email: '' },
                 accountTransactions: [],
                 sync_queue: [],
                 counters: {

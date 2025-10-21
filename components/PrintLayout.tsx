@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/db';
 import type { ClinicSettings } from '../types';
@@ -37,13 +36,13 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ children, title }) => 
                     {/* Center: Clinic Name & Address */}
                     <div className="w-1/2 text-center">
                         <h1 className="text-2xl font-bold text-gray-800">{settings?.name || 'VetClinic'}</h1>
-                        <p className="text-sm text-gray-600">Clinic Address, City, State</p>
+                        <p className="text-sm text-gray-600">{settings?.address || 'Clinic Address, City, State'}</p>
                     </div>
 
                     {/* Right: Contact Info */}
                     <div className="w-1/4 text-right text-sm">
-                        <p className="text-gray-600">(000) 000-0000</p>
-                        <p className="text-gray-600">email@example.com</p>
+                        <p className="text-gray-600">{settings?.phone || '(000) 000-0000'}</p>
+                        <p className="text-gray-600">{settings?.email || 'email@example.com'}</p>
                     </div>
                 </div>
                 <h2 className="text-xl font-semibold text-center my-4">{title}</h2>

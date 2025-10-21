@@ -166,6 +166,18 @@ export const SettingsScreen: React.FC<{ user: User }> = ({ user }) => {
                             <input type="text" name="name" id="name" value={settings.name} onChange={handleSettingsChange} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
                         </div>
                         <div>
+                            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Clinic Address</label>
+                            <input type="text" name="address" id="address" value={settings.address || ''} onChange={handleSettingsChange} placeholder="123 Vet Street, Animal City" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                        </div>
+                        <div>
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Contact Number</label>
+                            <input type="tel" name="phone" id="phone" value={settings.phone || ''} onChange={handleSettingsChange} placeholder="555-123-4567" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                        </div>
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
+                            <input type="email" name="email" id="email" value={settings.email || ''} onChange={handleSettingsChange} placeholder="contact@vetclinic.com" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium text-gray-700">Clinic Logo</label>
                             <div className="mt-2 flex items-center gap-4">
                                 {settings.logo ? (

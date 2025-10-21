@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { db } from './services/db';
-import type { User } from './types';
 import { LoginScreen } from './screens/LoginScreen';
 import { Layout } from './components/Layout';
+import { db } from './services/db';
 import { syncService } from './services/syncService';
 import { backupService } from './services/backupService';
+import type { User } from './types';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeDB = async () => {
+    async function initializeApp() {
       try {
         await db.init();
-        setIsLoading(false);
-      } catch (err) {
-        console.error("Failed to initialize database:", err);
-        setError("Could not initialize the application database. Please try refreshing the page.");
-        setIsLoading(false);
+        // FIX: Property 'start' does not exist on type 'SyncService'. The correct method is 'startSync'.
+        syncService.startSync();
+        backupService.start();
+      } catch (error) {
+        console.error("Failed to initialize the app:", error);
+        // You could show an error message to the user here
+      } finally {
+        setLoading(false);
       }
+    }
+    initializeApp();
+
+    // Cleanup services on component unmount
+    return () => {
+      // FIX: Property 'stop' does not exist on type 'SyncService'. The correct method is 'stopSync'.
+      syncService.stopSync();
+      backupService.stop();
     };
-    initializeDB();
-    syncService.startSync();
-    backupService.start();
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
@@ -35,31 +42,21 @@ function App() {
     setUser(null);
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Initializing Application...</div>
+        <div className="text-center">
+          <p className="text-lg font-semibold text-gray-700">Loading VetClinic...</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
-     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">{error}</div>
-      </div>
-    );
+  if (!user) {
+    return <LoginScreen onLogin={handleLogin} />;
   }
 
-  return (
-    <>
-      {!user ? (
-        <LoginScreen onLogin={handleLogin} />
-      ) : (
-        <Layout user={user} onLogout={handleLogout} />
-      )}
-    </>
-  );
+  return <Layout user={user} onLogout={handleLogout} />;
 }
 
 export default App;

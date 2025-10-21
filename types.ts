@@ -106,6 +106,9 @@ export interface User {
 export interface ClinicSettings {
     name: string;
     logo: string | null;
+    address?: string;
+    email?: string;
+    phone?: string;
 }
 
 export interface LedgerEntry {
