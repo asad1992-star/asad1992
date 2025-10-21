@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/db';
 import type { Customer, PartyHistory, Invoice, Payment } from '../types';
@@ -103,11 +104,16 @@ export const CustomerHistoryView: React.FC<CustomerHistoryViewProps> = ({ custom
   
   const handlePrint = () => {
     const modalWrapper = document.querySelector('.customer-history-modal');
-    if (modalWrapper) {
-      modalWrapper.classList.add('modal-print-area');
-      window.print();
+    if (!modalWrapper) return;
+
+    const handleAfterPrint = () => {
       modalWrapper.classList.remove('modal-print-area');
-    }
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+
+    window.addEventListener('afterprint', handleAfterPrint);
+    modalWrapper.classList.add('modal-print-area');
+    window.print();
   };
 
   const renderContent = () => {

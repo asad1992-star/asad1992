@@ -1,7 +1,8 @@
+
 import {
     Product, Customer, Supplier, Invoice, Payment, Expense,
     LedgerEntry, ProductHistoryEntry, PartyHistory, InvoiceWithDetails, StockBatch, InvoiceItem,
-    User, ClinicSettings, AccountTransaction, ProfitLossReportData, InventoryReportItem, PartyReportItem, PaymentWithParty
+    User, ClinicSettings, AccountTransaction, ProfitLossReportData, InventoryReportItem, PartyReportItem, PaymentWithParty, SyncOperation
 } from '../types';
 
 const DB_KEY = 'vetclinic_db';
@@ -16,6 +17,7 @@ interface DBData {
     users: User[];
     clinicSettings: ClinicSettings;
     accountTransactions: AccountTransaction[];
+    sync_queue: SyncOperation[];
     counters: {
         customer: number;
         supplier: number;
@@ -24,6 +26,7 @@ interface DBData {
         expense: number;
         user: number;
         transaction: number;
+        sync_operation: number;
     };
 }
 
@@ -58,8 +61,9 @@ class DBService {
         users: [],
         clinicSettings: { name: 'VetClinic', logo: null },
         accountTransactions: [],
+        sync_queue: [],
         counters: {
-            customer: 1, supplier: 1, invoice: 1, payment: 1, expense: 1, user: 1, transaction: 1,
+            customer: 1, supplier: 1, invoice: 1, payment: 1, expense: 1, user: 1, transaction: 1, sync_operation: 1,
         }
     };
 
@@ -98,6 +102,12 @@ class DBService {
             needsSave = true;
         }
 
+        if (!this.data.sync_queue) {
+            this.data.sync_queue = [];
+            this.data.counters.sync_operation = 1;
+            needsSave = true;
+        }
+
         if(this.data.customers.length === 0) {
             this.data.customers.push({ id: 'cus1', name: 'John Doe', phone: '123-456-7890', address: '123 Main St', outstandingBalance: 0 });
             this.data.counters.customer = 2;
@@ -115,7 +125,6 @@ class DBService {
                 location: 'A1', 
                 packingUnit: '100ml Vial', 
                 looseUnit: 'ml',
-                // FIX: Added missing 'stockVials' property to conform to the Product type.
                 stockVials: 0,
                 stockLoose: 0, 
                 latestPurchasePrice: 500, 
@@ -158,6 +167,17 @@ class DBService {
         }
     }
 
+    private _logSyncOperation(collection: string, action: 'create' | 'update' | 'delete', payload: any) {
+        const operation: SyncOperation = {
+            id: `sync${this.data.counters.sync_operation++}`,
+            timestamp: new Date().toISOString(),
+            collection,
+            action,
+            payload
+        };
+        this.data.sync_queue.push(operation);
+    }
+
     // --- GETTERS ---
     async getProducts(): Promise<Product[]> { 
         return this.data.products.map(p => ({
@@ -196,6 +216,7 @@ class DBService {
                 lowStockAlert: productData.lowStockAlert,
                 latestPurchasePrice: productData.latestPurchasePrice
             };
+            this._logSyncOperation('products', 'update', this.data.products[index]);
         } else {
             const newProduct = { ...productData };
             // If initial stock is provided, create a seed batch
@@ -211,6 +232,7 @@ class DBService {
             }
             delete (newProduct as Partial<Product>).stockVials;
             this.data.products.push(newProduct as Product);
+            this._logSyncOperation('products', 'create', newProduct);
         }
         this.save();
     }
@@ -218,10 +240,15 @@ class DBService {
     async saveCustomer(customerData: Omit<Customer, 'outstandingBalance'> & { id?: string }): Promise<void> {
         if (customerData.id) {
             const index = this.data.customers.findIndex(c => c.id === customerData.id);
-            if (index > -1) this.data.customers[index] = { ...this.data.customers[index], ...customerData };
+            if (index > -1) {
+                this.data.customers[index] = { ...this.data.customers[index], ...customerData };
+                this._logSyncOperation('customers', 'update', this.data.customers[index]);
+            }
         } else {
             const newId = `cus${this.data.counters.customer++}`;
-            this.data.customers.push({ ...customerData, id: newId, outstandingBalance: 0 });
+            const newCustomer = { ...customerData, id: newId, outstandingBalance: 0 };
+            this.data.customers.push(newCustomer);
+            this._logSyncOperation('customers', 'create', newCustomer);
         }
         this.save();
     }
@@ -229,10 +256,15 @@ class DBService {
     async saveSupplier(supplierData: Omit<Supplier, 'outstandingBalance'> & { id?: string }): Promise<void> {
         if (supplierData.id) {
             const index = this.data.suppliers.findIndex(s => s.id === supplierData.id);
-            if (index > -1) this.data.suppliers[index] = { ...this.data.suppliers[index], ...supplierData };
+            if (index > -1) {
+                this.data.suppliers[index] = { ...this.data.suppliers[index], ...supplierData };
+                this._logSyncOperation('suppliers', 'update', this.data.suppliers[index]);
+            }
         } else {
             const newId = `sup${this.data.counters.supplier++}`;
-            this.data.suppliers.push({ ...supplierData, id: newId, outstandingBalance: 0 });
+            const newSupplier = { ...supplierData, id: newId, outstandingBalance: 0 };
+            this.data.suppliers.push(newSupplier);
+            this._logSyncOperation('suppliers', 'create', newSupplier);
         }
         this.save();
     }
@@ -240,10 +272,12 @@ class DBService {
     async saveInvoice(invoiceData: Omit<Invoice, 'id'>): Promise<void> {
         const prefix = { treatment: 'trt#', sale: 'sl#', purchase: 'pur#' };
         const newId = `${prefix[invoiceData.type]}${this.data.counters.invoice++}`;
+        const newInvoice = { ...invoiceData, id: newId };
 
-        this.updateStockAndBalances(invoiceData, 'create', newId);
+        this.updateStockAndBalances(newInvoice, 'create', newId);
         
-        this.data.invoices.push({ ...invoiceData, id: newId });
+        this.data.invoices.push(newInvoice);
+        this._logSyncOperation('invoices', 'create', newInvoice);
 
         // Create account transaction for payment made at time of invoice
         if (invoiceData.amountPaid > 0) {
@@ -255,9 +289,7 @@ class DBService {
             if (invoiceData.type === 'treatment') {
                 const medicineChargedAmount = invoiceData.subtotal;
                 
-                // The payment first covers the medicine sale for the clinic
                 const paidToClinic = Math.min(invoiceData.amountPaid, medicineChargedAmount);
-                // The rest of the payment is the owner's profit (vet fee etc.)
                 const paidToOwner = invoiceData.amountPaid - paidToClinic;
 
                 clinicAmount = paidToClinic;
@@ -273,7 +305,6 @@ class DBService {
                 description = `Payment for Purchase #${newId} to ${party?.name || 'N/A'}`;
             }
             
-            // Only create a transaction if there's an amount to record
             if (clinicAmount !== 0 || ownerAmount !== 0) {
                 this.data.accountTransactions.push({
                     id: `trans#${this.data.counters.transaction++}`,
@@ -281,8 +312,8 @@ class DBService {
                     description,
                     clinicAmount,
                     ownerAmount,
-                    clinicBalance: 0, // will be recalculated
-                    ownerBalance: 0, // will be recalculated
+                    clinicBalance: 0, 
+                    ownerBalance: 0, 
                     referenceId: newId,
                     isManual: false,
                 });
@@ -294,7 +325,9 @@ class DBService {
     
     async savePayment(paymentData: Omit<Payment, 'id'>): Promise<void> {
         const newId = `pay${this.data.counters.payment++}`;
-        this.data.payments.push({ ...paymentData, id: newId });
+        const newPayment = { ...paymentData, id: newId };
+        this.data.payments.push(newPayment);
+        this._logSyncOperation('payments', 'create', newPayment);
 
         let partyName = 'N/A';
         const customer = this.data.customers.find(c => c.id === paymentData.partyId);
@@ -332,7 +365,10 @@ class DBService {
         let newId = expenseData.id;
         if(expenseData.id){
             const index = this.data.expenses.findIndex(e => e.id === expenseData.id);
-            if(index > -1) this.data.expenses[index] = { ...this.data.expenses[index], ...expenseData as Expense };
+            if(index > -1) {
+                this.data.expenses[index] = { ...this.data.expenses[index], ...expenseData as Expense };
+                this._logSyncOperation('expenses', 'update', this.data.expenses[index]);
+            }
             // Also update the related transaction
             const transaction = this.data.accountTransactions.find(t => t.referenceId === expenseData.id);
             if (transaction) {
@@ -342,7 +378,9 @@ class DBService {
             }
         } else {
             newId = `exp${this.data.counters.expense++}`;
-            this.data.expenses.push({ ...expenseData, id: newId } as Expense);
+            const newExpense = { ...expenseData, id: newId } as Expense;
+            this.data.expenses.push(newExpense);
+            this._logSyncOperation('expenses', 'create', newExpense);
             this.data.accountTransactions.push({
                 id: `trans#${this.data.counters.transaction++}`,
                 date: expenseData.date,
@@ -360,6 +398,7 @@ class DBService {
     
     async saveClinicSettings(settings: ClinicSettings): Promise<void> {
         this.data.clinicSettings = settings;
+        this._logSyncOperation('clinicSettings', 'update', settings);
         this.save();
     }
 
@@ -375,24 +414,30 @@ class DBService {
                 userData.password = existingUser.password;
             }
             this.data.users[index] = userData;
+            this._logSyncOperation('users', 'update', { ...userData, password: '***' });
         } else {
             const newId = `user${this.data.counters.user++}`;
             if (!userData.password) throw new Error('Password is required for new users.');
-            this.data.users.push({ ...userData, id: newId });
+            const newUser = { ...userData, id: newId };
+            this.data.users.push(newUser);
+            this._logSyncOperation('users', 'create', { ...newUser, password: '***' });
         }
         this.save();
     }
 
     // --- DELETERS ---
     async deleteProduct(id: string): Promise<void> {
+        this._logSyncOperation('products', 'delete', { id });
         this.data.products = this.data.products.filter(p => p.id !== id);
         this.save();
     }
     async deleteCustomer(id: string): Promise<void> {
+        this._logSyncOperation('customers', 'delete', { id });
         this.data.customers = this.data.customers.filter(c => c.id !== id);
         this.save();
     }
     async deleteSupplier(id: string): Promise<void> {
+        this._logSyncOperation('suppliers', 'delete', { id });
         this.data.suppliers = this.data.suppliers.filter(s => s.id !== id);
         this.save();
     }
@@ -401,6 +446,7 @@ class DBService {
         if (invoiceIndex === -1) return;
 
         const invoice = this.data.invoices[invoiceIndex];
+        this._logSyncOperation('invoices', 'delete', { id });
         this.updateStockAndBalances(invoice, 'delete', invoice.id);
         this.data.invoices.splice(invoiceIndex, 1);
         
@@ -410,11 +456,13 @@ class DBService {
         this.save();
     }
      async deleteExpense(id: string): Promise<void> {
+        this._logSyncOperation('expenses', 'delete', { id });
         this.data.expenses = this.data.expenses.filter(e => e.id !== id);
         this.data.accountTransactions = this.data.accountTransactions.filter(t => t.referenceId !== id);
         this.save();
     }
     async deleteUser(id: string): Promise<void> {
+        this._logSyncOperation('users', 'delete', { id });
         this.data.users = this.data.users.filter(u => u.id !== id);
         this.save();
     }
@@ -427,7 +475,6 @@ class DBService {
             const product = this.data.products.find(p => p.id === item.productId);
             if (!product) throw new Error(`Product ${item.productId} not found.`);
 
-            // Sort batches by date to ensure FIFO
             product.batches.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
             if (invoice.type === 'purchase') {
@@ -439,8 +486,7 @@ class DBService {
                         date: invoice.date
                     });
                     product.latestPurchasePrice = item.unitPrice;
-                } else { // 'delete'
-// FIX: Add type assertion to access 'id' property on the 'invoice' object, which is guaranteed to be a full Invoice object in the 'delete' action branch.
+                } else { 
                     product.batches = product.batches.filter(b => b.invoiceId !== (invoice as Invoice).id);
                 }
             } else if (invoice.type === 'sale') {
@@ -464,17 +510,15 @@ class DBService {
                         }
                     }
                     product.batches = remainingBatches;
-                    // Store per-unit COGS
                     if (item.quantity > 0) {
                         (item as InvoiceItem).purchaseUnitPrice = costOfGoodsSold / item.quantity;
                     }
 
-                } else { // 'delete'
+                } else { 
                      const avgPrice = item.purchaseUnitPrice ? item.purchaseUnitPrice : product.latestPurchasePrice;
                      product.batches.unshift({
                          quantity: item.quantity,
-                         purchasePrice: avgPrice, // Revert with original per-unit cost if available
-// FIX: Add type assertion to access 'id' property on the 'invoice' object, which is guaranteed to be a full Invoice object in the 'delete' action branch.
+                         purchasePrice: avgPrice,
                          invoiceId: `revert-${(invoice as Invoice).id}`,
                          date: new Date().toISOString()
                      });
@@ -505,16 +549,13 @@ class DBService {
                         }
                         product.batches = remainingBatches;
 
-                        // Calculate actual COGS and update invoice item
                         const totalLooseOpened = vialsNeeded * packingSize;
                         const actualCostPerLooseUnit = totalLooseOpened > 0 ? totalCostOfVials / totalLooseOpened : 0;
                         (item as InvoiceItem).purchaseUnitPrice = actualCostPerLooseUnit;
 
                         product.stockLoose += totalLooseOpened;
                     }
-                } else { // delete treatment
-                    // This is complex. For now, we'll just adjust loose stock back.
-                    // A proper implementation would need to track which vials were opened.
+                } else {
                     product.stockLoose += item.quantity;
                 }
             }
@@ -772,24 +813,39 @@ class DBService {
              if (index > -1) {
                  const original = this.data.accountTransactions[index];
                  this.data.accountTransactions[index] = { ...original, ...data };
+                 this._logSyncOperation('accountTransactions', 'update', this.data.accountTransactions[index]);
              }
         } else { // Creating
             const newId = `trans#${this.data.counters.transaction++}`;
-            this.data.accountTransactions.push({
+            const newTransaction = {
                 ...data,
                 id: newId,
                 clinicBalance: 0, // Recalculated on save
                 ownerBalance: 0, // Recalculated on save
-            });
+            };
+            this.data.accountTransactions.push(newTransaction);
+            this._logSyncOperation('accountTransactions', 'create', newTransaction);
         }
         this.save();
     }
 
     async deleteManualTransaction(id: string): Promise<void> {
+        this._logSyncOperation('accountTransactions', 'delete', { id });
         this.data.accountTransactions = this.data.accountTransactions.filter(t => t.id !== id);
         this.save();
     }
     
+    // --- SYNC QUEUE METHODS ---
+    async getSyncQueue(): Promise<SyncOperation[]> {
+        return [...this.data.sync_queue];
+    }
+
+    async clearSyncOperations(ids: string[]): Promise<void> {
+        const idSet = new Set(ids);
+        this.data.sync_queue = this.data.sync_queue.filter(op => !idSet.has(op.id));
+        this.save();
+    }
+
     // --- DATA MANAGEMENT ---
     async exportData(): Promise<string> {
         return JSON.stringify(this.data, null, 2);

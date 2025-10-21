@@ -3,6 +3,7 @@ import { db } from './services/db';
 import type { User } from './types';
 import { LoginScreen } from './screens/LoginScreen';
 import { Layout } from './components/Layout';
+import { syncService } from './services/syncService';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -21,6 +22,7 @@ function App() {
       }
     };
     initializeDB();
+    syncService.startSync();
   }, []);
 
   const handleLogin = (loggedInUser: User) => {

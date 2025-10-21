@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/db';
 import type { Product, ProductHistoryEntry } from '../types';
@@ -66,11 +67,16 @@ export const ProductHistoryView: React.FC<ProductHistoryViewProps> = ({ product 
   
   const handlePrint = () => {
     const modalWrapper = document.querySelector('.product-history-modal');
-    if (modalWrapper) {
-      modalWrapper.classList.add('modal-print-area');
-      window.print();
+    if (!modalWrapper) return;
+
+    const handleAfterPrint = () => {
       modalWrapper.classList.remove('modal-print-area');
-    }
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+
+    window.addEventListener('afterprint', handleAfterPrint);
+    modalWrapper.classList.add('modal-print-area');
+    window.print();
   };
 
   if (loading) return <div className="text-center p-4">Loading history...</div>;

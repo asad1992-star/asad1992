@@ -1,7 +1,7 @@
-
 import React from 'react';
 import type { User, ClinicSettings } from '../types';
 import { VetIcon } from './icons/VetIcon';
+import { SyncStatus } from './SyncStatus';
 
 interface SidebarProps {
   user: User;
@@ -75,6 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, currentScreen,
           Logout
         </button>
       </div>
+      <SyncStatus />
     </aside>
   );
 };

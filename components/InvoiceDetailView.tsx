@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { InvoiceWithDetails } from '../types';
 import { PrinterIcon } from './icons/PrinterIcon';
@@ -8,11 +9,16 @@ export const InvoiceDetailView: React.FC<{ invoice: InvoiceWithDetails }> = ({ i
 
   const handlePrint = () => {
     const modalWrapper = document.querySelector('.invoice-detail-modal-wrapper');
-    if (modalWrapper) {
-      modalWrapper.classList.add('modal-print-area');
-      window.print();
+    if (!modalWrapper) return;
+
+    const handleAfterPrint = () => {
       modalWrapper.classList.remove('modal-print-area');
-    }
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+
+    window.addEventListener('afterprint', handleAfterPrint);
+    modalWrapper.classList.add('modal-print-area');
+    window.print();
   };
   
   const medicineCostAtPurchase = invoice.items.reduce((acc, item) => acc + ((item.purchaseUnitPrice ?? 0) * item.quantity), 0);

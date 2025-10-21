@@ -189,3 +189,12 @@ export interface PartyReportItem {
 export interface PaymentWithParty extends Payment {
     partyName: string;
 }
+
+// For Sync Service
+export interface SyncOperation {
+    id: string;
+    timestamp: string;
+    collection: string;
+    action: 'create' | 'update' | 'delete';
+    payload: any;
+}
