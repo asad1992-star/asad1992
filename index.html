@@ -39,111 +39,131 @@
     -moz-appearance: textfield;
   }
 
-  /* --- NEW PROFESSIONAL REPORT PRINTING STYLES --- */
+  /* --- PROFESSIONAL PRINT TEMPLATE STYLES --- */
   @media print {
-    /* 1. Use display properties to control visibility. This is more reliable than 'visibility'. */
-    .no-print, .no-print * {
-        display: none !important;
-    }
-    .print-only {
-        display: block !important;
-    }
-
-    /* 2. Reset modal and layout styles that interfere with printing. */
-    body {
-        background: white !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        margin: 0;
-        padding: 0;
-    }
-    /* When printing from a modal, we want the content to take over the page. */
-    .printable-container-root {
-        position: static !important;
-        background: none !important;
-        padding: 0 !important;
-        overflow: visible !important;
-        display: block !important; /* Ensure the modal container is visible */
-    }
-    .modal-content-wrapper {
-        box-shadow: none !important;
-        border: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        max-width: none !important;
-        width: 100% !important;
-        height: auto !important;
-    }
-    .modal-content-wrapper > .p-6 {
-        padding: 0 !important;
-    }
-
-    /* 3. The .printable-area is the root for printed content. */
-    .printable-area {
-        position: static; /* Let it flow naturally since we've reset the containers */
-        width: 100%;
-        height: auto;
-    }
-    
-    /* 4. Define page layout. */
+    /* 1. Page Setup & Hiding Logic */
     @page {
         size: A4;
-        margin: 1.5cm;
+        margin: 0; /* Remove default browser margins */
     }
-    
-    /* 5. Force containers to expand and remove on-screen styles. */
-    .overflow-x-auto, .overflow-y-auto {
-        overflow: visible !important;
+    body {
+        background: #e2e8f0 !important; /* A light grey to see the white page */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
-    .max-h-64, .max-h-\[60vh\], .max-h-\[50vh\] {
-        max-height: none !important;
+    body * {
+      visibility: hidden;
     }
-    .shadow, .rounded-lg {
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        border: none !important;
+    .printable-area, .printable-area * {
+      visibility: visible;
     }
-    
-    /* 6. Style tables for professional reports. */
-    table {
-        width: 100% !important;
-        min-width: 0 !important;
-        border-collapse: collapse !important;
-        font-size: 10pt;
-    }
-    thead {
-        display: table-header-group; /* Crucial for repeating headers on each page */
-    }
-    tr {
-        page-break-inside: avoid;
-    }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 6px;
-    }
-    th {
-        background-color: #f2f2f2 !important;
-        font-weight: 600;
-        text-align: left;
-    }
-    .no-print-col {
-        display: none !important;
+    .printable-area {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
     }
 
-    /* 7. Style the watermark correctly. */
-    .print-watermark {
-        position: fixed;
-        z-index: -1;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        opacity: 0.08 !important;
-        pointer-events: none;
+    /* 2. Layout Structure */
+    .print-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1cm 1.5cm;
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, sans-serif;
     }
-    .print-watermark img {
-        width: 80vw;
-        height: auto;
-        max-width: 500px;
+    .print-page-header, .print-page-footer {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        font-size: 9pt;
+        color: #555;
+    }
+    .print-page-header {
+        align-items: center;
+        text-align: center;
+    }
+    .print-page-header span:nth-child(2) {
+        font-weight: 600;
+        flex-grow: 1;
+    }
+    .print-main-content-wrapper {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 1rem 0;
+    }
+    .print-main-content {
+        width: 100%;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* 3. Content Styling */
+    .print-clinic-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .clinic-info-center { text-align: center; flex-grow: 1; }
+    .clinic-info-right { text-align: right; }
+    .clinic-name { font-size: 20pt; font-weight: 700; color: #1a202c; }
+    .clinic-details { font-size: 10pt; color: #718096; }
+    .clinic-contact { font-size: 10pt; color: #4a5568; }
+    .print-report-title-container {
+        padding: 1rem 0 1.5rem 0;
+        text-align: center;
+    }
+    .print-report-title {
+        font-size: 16pt;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    .print-thank-you-container {
+        padding-top: 1rem;
+        margin-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+    }
+    .print-thank-you {
+        font-size: 10pt;
+        color: #718096;
+    }
+    
+    /* 4. Table Styling */
+    .print-table-content .bg-white {
+        box-shadow: none !important;
+        border-radius: 0.5rem !important;
+        border: 1px solid #e2e8f0 !important;
+        overflow: hidden !important;
+    }
+    .print-table-content table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10pt;
+    }
+    .print-table-content th,
+    .print-table-content td {
+        padding: 0.75rem;
+        text-align: left;
+        border: 1px solid #e2e8f0;
+    }
+    .print-table-content th {
+        background-color: #f7fafc !important;
+        font-weight: 600;
+        color: #4a5568;
+    }
+    .print-table-content .no-print-col,
+    .print-table-content button {
+        display: none !important;
     }
   }
 </style>

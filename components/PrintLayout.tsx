@@ -1,7 +1,5 @@
 import React from 'react';
 import { db } from '../services/db';
-import type { ClinicSettings } from '../types';
-import { VetIcon } from './icons/VetIcon';
 
 interface PrintLayoutProps {
   children: React.ReactNode;
@@ -10,41 +8,63 @@ interface PrintLayoutProps {
 
 export const PrintLayout: React.FC<PrintLayoutProps> = ({ children, title }) => {
     const settings = db.getClinicSettingsSync();
-    const printDate = new Date().toLocaleString();
+    // Format date and time exactly as in the image: 22/10/2025, 01:13
+    const printDateTime = new Date().toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).replace(' ', '');
 
     return (
-        <div className="relative">
-            {/* Watermark element - will be positioned behind the content by CSS z-index */}
-            <div className="print-watermark print-only">
-                {settings?.logo && <img src={settings.logo} alt="Clinic Watermark" />}
-            </div>
+        <div className="print-container">
+            {/* 1. Page Header (Top) */}
+            <header className="print-page-header">
+                <span>{printDateTime}</span>
+                <span>VetClinic Management System</span>
+                {/* Empty span to push center text correctly */}
+                <span style={{ display: 'inline-block', width: printDateTime.length + 'ch' }}></span>
+            </header>
 
-            {/* Content wrapper */}
-            <div className="relative z-10">
-                <header className="print-header mb-6">
-                    {/* Top bar with date and system name */}
-                    <div className="flex justify-between items-center text-xs text-gray-500 border-b pb-2 mb-4">
-                        <span>{printDate}</span>
-                        <span>VetClinic Management System</span>
+            <main className="print-main-content-wrapper">
+                {/* 2. Main Content Box */}
+                <div className="print-main-content">
+                    {/* 3. Clinic Header */}
+                    <div className="print-clinic-header">
+                        <div className="clinic-info-center">
+                            <p className="clinic-name">{settings?.name || 'VetClinic'}</p>
+                            <p className="clinic-details">{settings?.address || 'Clinic Address, City, State'}</p>
+                        </div>
+                        <div className="clinic-info-right">
+                            <p className="clinic-contact">{settings?.phone || '(000) 000-0000'}</p>
+                            <p className="clinic-contact">{settings?.email || 'email@example.com'}</p>
+                        </div>
                     </div>
 
-                    {/* Main Clinic Branding */}
-                    <div className="text-center my-4">
-                        <h1 className="text-3xl font-bold text-gray-900">{settings?.name || 'VetClinic'}</h1>
-                        <p className="text-sm text-gray-600">{settings?.address || '123 Vet Street, Animal City'}</p>
-                        <p className="text-sm text-gray-600">{`${settings?.phone || '555-123-4567'} | ${settings?.email || 'contact@vetclinic.com'}`}</p>
+                    {/* 4. Report Title */}
+                    <div className="print-report-title-container">
+                        <h2 className="print-report-title">{title}</h2>
                     </div>
 
-                    {/* Report Title */}
-                    <h2 className="text-2xl font-semibold text-center py-4 border-t border-b">{title}</h2>
-                </header>
-                <main className="print-content">
-                    {children}
-                </main>
-                <footer className="print-footer mt-8 pt-4 border-t text-center text-gray-500 text-sm">
-                    <p>Thank you for visiting us!</p>
-                </footer>
-            </div>
+                    {/* 5. Table (from children) */}
+                    <div className="print-table-content">
+                        {children}
+                    </div>
+
+                    {/* 6. Footer */}
+                    <div className="print-thank-you-container">
+                        <p className="print-thank-you">Thank you for visiting us!</p>
+                    </div>
+                </div>
+            </main>
+            
+            {/* 7. Page Footer (Bottom) */}
+            <footer className="print-page-footer">
+                <span>https://vetclinic92.netlify.app</span>
+                <span>1/1</span>
+            </footer>
         </div>
     );
 };
