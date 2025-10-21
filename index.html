@@ -41,50 +41,37 @@
 
   /* Print Styles */
   @media print {
-    body {
-      background-color: #fff !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
+    /* 1. Hide everything on the page by default using visibility */
+    body * {
+      visibility: hidden;
     }
 
-    /* Hide all elements designated as screen-only */
-    .no-print {
-      display: none !important;
-    }
-    
-    /* Show elements designated as print-only */
-    .print-only {
-      display: block !important;
+    /* 2. Then, reveal ONLY the printable-area and its children */
+    .printable-area, .printable-area * {
+      visibility: visible;
     }
 
-    /* Reset modal styles to make content take up the full page */
-    body .fixed.inset-0 { /* Modal backdrop */
-        position: static !important;
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
+    /* 3. Position the printable area to take over the whole page */
+    .printable-area {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      padding: 0.5in; /* Add some margin for printing */
+      box-sizing: border-box;
     }
 
-    body .modal-content-wrapper { /* Modal panel */
-        box-shadow: none !important;
-        border: none !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: auto !important;
-    }
-    
-    /* Watermark Styles */
+    /* 4. Watermark Styling */
     .print-watermark {
-      position: fixed;
+      position: fixed; /* Position relative to the page */
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       opacity: 0.1 !important;
       pointer-events: none;
-      z-index: 0;
+      /* The z-index on the content wrapper in PrintLayout will place it above this */
     }
+
     .print-watermark img {
       width: 80vw;
       height: auto;
