@@ -23,23 +23,17 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ children, title }) => 
                 <header className="print-header">
                     {/* Professional Header */}
                     <div className="flex justify-between items-start border-b pb-4 mb-4">
-                        {/* Left: Logo */}
-                        <div className="w-1/4">
-                            {settings?.logo ? (
-                                <img src={settings.logo} alt="Clinic Logo" className="h-16 w-auto max-w-full" />
-                            ) : (
-                                <VetIcon className="h-16 w-16 text-blue-600" />
-                            )}
-                        </div>
+                        {/* This is a spacer to help with centering. It takes up no space if contact info is long. */}
+                        <div className="flex-1"></div>
                         
                         {/* Center: Clinic Name & Address */}
-                        <div className="w-1/2 text-center">
+                        <div className="px-4 text-center">
                             <h1 className="text-2xl font-bold text-gray-800">{settings?.name || 'VetClinic'}</h1>
                             <p className="text-sm text-gray-600">{settings?.address || 'Clinic Address, City, State'}</p>
                         </div>
 
                         {/* Right: Contact Info */}
-                        <div className="w-1/4 text-right text-sm">
+                        <div className="flex-1 text-right text-sm">
                             <p className="text-gray-600">{settings?.phone || '(000) 000-0000'}</p>
                             <p className="text-gray-600">{settings?.email || 'email@example.com'}</p>
                         </div>

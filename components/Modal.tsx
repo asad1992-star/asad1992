@@ -21,7 +21,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
 
   return (
     <div 
-      className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center ${wrapperClassName}`}
+      className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center printable-container-root ${wrapperClassName}`}
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
@@ -31,7 +31,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
         className={`bg-white rounded-lg shadow-xl w-full m-4 ${sizeClasses[size]} modal-content-wrapper`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-4 border-b print-hide">
+        <div className="flex justify-between items-center p-4 border-b no-print">
           <h2 id="modal-title" className="text-xl font-semibold text-gray-800">{title}</h2>
           <button 
             onClick={onClose} 

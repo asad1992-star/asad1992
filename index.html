@@ -39,43 +39,50 @@
     -moz-appearance: textfield;
   }
 
-  /* Print Styles */
+  /* --- NEWEST, MOST ROBUST PRINT STYLES --- */
   @media print {
-    /* 1. Hide everything on the page by default using visibility */
+    /* Hide on-screen only elements */
+    .no-print {
+        display: none !important;
+    }
+    /* Show print-only elements */
+    .print-only {
+        display: block !important;
+    }
+    
+    /* 1. By default, hide everything from view. */
     body * {
-      visibility: hidden;
+        visibility: hidden;
     }
 
-    /* 2. Then, reveal ONLY the printable-area and its children */
+    /* 2. Make the designated printable area and all its children visible. */
     .printable-area, .printable-area * {
-      visibility: visible;
+        visibility: visible;
     }
 
-    /* 3. Position the printable area to take over the whole page */
+    /* 3. Position the printable area to fill the whole page.
+       This removes whitespace from other hidden elements. */
     .printable-area {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      padding: 0.5in; /* Add some margin for printing */
-      box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
     }
 
-    /* 4. Watermark Styling */
+    /* 4. Ensure watermark is styled correctly */
     .print-watermark {
-      position: fixed; /* Position relative to the page */
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0.1 !important;
-      pointer-events: none;
-      /* The z-index on the content wrapper in PrintLayout will place it above this */
+        position: fixed;
+        z-index: -1;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0.08 !important;
+        pointer-events: none;
     }
-
     .print-watermark img {
-      width: 80vw;
-      height: auto;
-      max-width: 500px;
+        width: 80vw;
+        height: auto;
+        max-width: 500px;
     }
   }
 </style>
