@@ -39,37 +39,74 @@
     -moz-appearance: textfield;
   }
 
-  /* --- NEWEST, MOST ROBUST PRINT STYLES --- */
+  /* --- NEW PROFESSIONAL REPORT PRINTING STYLES --- */
   @media print {
-    /* Hide on-screen only elements */
-    .no-print {
-        display: none !important;
-    }
-    /* Show print-only elements */
-    .print-only {
-        display: block !important;
-    }
-    
-    /* 1. By default, hide everything from view. */
+    /* 1. Use the visibility method to hide everything except the designated printable area. */
     body * {
         visibility: hidden;
     }
-
-    /* 2. Make the designated printable area and all its children visible. */
     .printable-area, .printable-area * {
         visibility: visible;
     }
-
-    /* 3. Position the printable area to fill the whole page.
-       This removes whitespace from other hidden elements. */
     .printable-area {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
+        height: auto;
+    }
+    
+    /* 2. Define page layout and ensure colors are printed. */
+    @page {
+        size: A4;
+        margin: 1.5cm;
+    }
+    body {
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
-    /* 4. Ensure watermark is styled correctly */
+    /* 3. Force containers to expand and remove on-screen styles. */
+    .overflow-x-auto, .overflow-y-auto {
+        overflow: visible !important;
+    }
+    .max-h-64, .max-h-\[60vh\], .max-h-\[50vh\] {
+        max-height: none !important;
+    }
+    .shadow, .rounded-lg {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+    
+    /* 4. Style tables for professional reports. */
+    table {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: collapse !important;
+        font-size: 10pt;
+    }
+    thead {
+        display: table-header-group; /* Crucial for repeating headers on each page */
+    }
+    tr {
+        page-break-inside: avoid;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 6px;
+    }
+    th {
+        background-color: #f2f2f2 !important;
+        font-weight: 600;
+        text-align: left;
+    }
+    .no-print-col {
+        display: none !important;
+    }
+
+    /* 5. Style the watermark correctly. */
     .print-watermark {
         position: fixed;
         z-index: -1;
