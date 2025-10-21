@@ -96,7 +96,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, onCancel, invo
 
     if (invoiceType === 'treatment') {
         unitPrice = currentManualRate;
-        purchaseUnitPrice = purchaseCostPerLooseUnit * currentQty; // Store total cost for the item quantity
+        purchaseUnitPrice = purchaseCostPerLooseUnit; // Store per-unit purchase cost
     } else if (invoiceType === 'purchase') {
         unitPrice = currentPurchaseRate;
     } else { // sale
@@ -108,7 +108,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, onCancel, invo
       productName: currentItem.name,
       quantity: currentQty,
       unitPrice,
-      purchaseUnitPrice, // For treatment, this is an estimate until saved
+      purchaseUnitPrice, // For treatment, this is the per-unit cost
       total: unitPrice * currentQty,
     }]);
 
