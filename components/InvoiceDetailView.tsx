@@ -86,7 +86,7 @@ export const InvoiceDetailView: React.FC<{ invoice: InvoiceWithDetails }> = ({ i
 
   return (
     <div>
-      <div className="print-only"><PrintLayout title={`Invoice #${invoice.id}`}>{invoiceBody}</PrintLayout></div>
+      <div className="print-only printable-area"><PrintLayout title={`Invoice #${invoice.id}`}>{invoiceBody}</PrintLayout></div>
       <div className="no-print">
         <div className="max-h-[60vh] overflow-y-auto">{invoiceBody}</div>
          <div className="pt-4 mt-4 border-t flex justify-end">

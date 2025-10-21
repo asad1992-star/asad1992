@@ -46,24 +46,28 @@
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    .no-print, .no-print *, .no-print-col, .no-print-col *, .print-hide, .print-hide * {
-      display: none !important;
+
+    /* Hide everything by default when printing */
+    body * {
+      visibility: hidden;
     }
-    .print-only {
-      display: block !important;
+    
+    /* Only show the designated printable area and its children */
+    .printable-area, .printable-area * {
+      visibility: visible;
     }
-    .print-header {
-      display: block;
-    }
-    .print-footer {
-      position: fixed;
-      bottom: 0;
+    
+    /* Position the printable area to take over the whole page */
+    .printable-area {
+      position: absolute;
+      left: 0;
+      top: 0;
       width: 100%;
-      display: block;
     }
     
     /* Watermark Styles */
     .print-watermark {
+      visibility: visible; /* Ensure watermark is not hidden */
       position: fixed;
       top: 50%;
       left: 50%;

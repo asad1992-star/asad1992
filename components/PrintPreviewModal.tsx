@@ -25,7 +25,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({ isOpen, on
       size="4xl"
     >
       {/* This is the content that gets sent to the printer. It's hidden on screen. */}
-      <div className="print-only">
+      <div className="print-only printable-area">
           <PrintLayout title={title}>
               {children}
           </PrintLayout>

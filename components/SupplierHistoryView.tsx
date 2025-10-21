@@ -122,7 +122,7 @@ export const SupplierHistoryView: React.FC<SupplierHistoryViewProps> = ({ suppli
 
   return (
     <>
-      <div className="print-only">
+      <div className="print-only printable-area">
           <PrintLayout title={`History for ${supplier.name}`}>
             {renderContent()}
           </PrintLayout>

@@ -80,7 +80,7 @@ export const ProductHistoryView: React.FC<ProductHistoryViewProps> = ({ product 
 
   return (
     <>
-        <div className="print-only">
+        <div className="print-only printable-area">
             <PrintLayout title={`History for ${product.name}`}>
             {contentToRender}
             </PrintLayout>

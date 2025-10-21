@@ -124,7 +124,7 @@ export const CustomerHistoryView: React.FC<CustomerHistoryViewProps> = ({ custom
 
   return (
     <>
-        <div className="print-only">
+        <div className="print-only printable-area">
             <PrintLayout title={`History for ${customer.name}`}>
                 {renderContent()}
             </PrintLayout>
