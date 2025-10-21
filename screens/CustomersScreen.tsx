@@ -53,12 +53,16 @@ export const CustomersScreen: React.FC<CustomersScreenProps> = ({ user }) => {
   
   const handleDeleteCustomer = async (customer: Customer) => {
       if (customer.outstandingBalance !== 0) {
-          alert("Cannot delete customer with an outstanding balance.");
+          alert("Cannot delete customer with an outstanding balance. Please clear the balance first.");
           return;
       }
-      if (window.confirm(`Are you sure you want to delete ${customer.name}?`)) {
-          await db.deleteCustomer(customer.id);
-          fetchCustomers();
+      if (window.confirm(`Are you sure you want to delete ${customer.name}? This action cannot be undone.`)) {
+          try {
+            await db.deleteCustomer(customer.id);
+            fetchCustomers();
+          } catch (error: any) {
+            alert(`Error: ${error.message}`);
+          }
       }
   }
 

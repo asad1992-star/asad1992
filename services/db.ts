@@ -1,4 +1,3 @@
-
 import {
     Product, Customer, Supplier, Invoice, Payment, Expense,
     LedgerEntry, ProductHistoryEntry, PartyHistory, InvoiceWithDetails, StockBatch, InvoiceItem,
@@ -204,7 +203,6 @@ class DBService {
         
         if (isEditing) {
             const index = this.data.products.findIndex(p => p.id === productData.id);
-            // Keep existing batches and stockLoose, only update metadata
             this.data.products[index] = {
                 ...this.data.products[index],
                 name: productData.name,
@@ -214,7 +212,8 @@ class DBService {
                 salePrice: productData.salePrice,
                 expiryDate: productData.expiryDate,
                 lowStockAlert: productData.lowStockAlert,
-                latestPurchasePrice: productData.latestPurchasePrice
+                latestPurchasePrice: productData.latestPurchasePrice,
+                stockLoose: productData.stockLoose
             };
             this._logSyncOperation('products', 'update', this.data.products[index]);
         } else {
@@ -427,16 +426,32 @@ class DBService {
 
     // --- DELETERS ---
     async deleteProduct(id: string): Promise<void> {
+        const isProductInUse = this.data.invoices.some(invoice => 
+            invoice.items.some(item => item.productId === id)
+        );
+
+        if (isProductInUse) {
+            throw new Error("Cannot delete product because it is used in one or more invoices. Please delete the relevant invoices first.");
+        }
+        
         this._logSyncOperation('products', 'delete', { id });
         this.data.products = this.data.products.filter(p => p.id !== id);
         this.save();
     }
     async deleteCustomer(id: string): Promise<void> {
+        const isCustomerInUse = this.data.invoices.some(invoice => invoice.customerId === id);
+        if (isCustomerInUse) {
+            throw new Error("Cannot delete customer with existing invoices. Please delete their invoices first.");
+        }
         this._logSyncOperation('customers', 'delete', { id });
         this.data.customers = this.data.customers.filter(c => c.id !== id);
         this.save();
     }
     async deleteSupplier(id: string): Promise<void> {
+        const isSupplierInUse = this.data.invoices.some(invoice => invoice.supplierId === id);
+        if (isSupplierInUse) {
+            throw new Error("Cannot delete supplier with existing invoices. Please delete their invoices first.");
+        }
         this._logSyncOperation('suppliers', 'delete', { id });
         this.data.suppliers = this.data.suppliers.filter(s => s.id !== id);
         this.save();
@@ -849,6 +864,56 @@ class DBService {
     // --- DATA MANAGEMENT ---
     async exportData(): Promise<string> {
         return JSON.stringify(this.data, null, 2);
+    }
+
+    async importData(jsonData: string): Promise<void> {
+        try {
+            const parsedData = JSON.parse(jsonData);
+            
+            // Stricter validation to ensure it's a valid-looking object from this app
+            if (typeof parsedData !== 'object' || parsedData === null || !parsedData.counters || !Array.isArray(parsedData.products)) {
+                throw new Error("Invalid backup file format. Core data structure is incorrect.");
+            }
+            
+            // Create a default structure to merge against. This ensures any missing keys from older backups are initialized.
+            const defaultData: DBData = {
+                products: [], customers: [], suppliers: [], invoices: [], payments: [], expenses: [], users: [],
+                clinicSettings: { name: 'VetClinic', logo: null },
+                accountTransactions: [],
+                sync_queue: [],
+                counters: {
+                    customer: 1, supplier: 1, invoice: 1, payment: 1, expense: 1, user: 1, transaction: 1, sync_operation: 1,
+                }
+            };
+            
+            // Merge parsed data over the default structure. This adds any missing keys from older backups.
+            const mergedData: DBData = {
+                ...defaultData,
+                ...parsedData,
+                // Explicitly merge nested objects to ensure all their keys are present
+                counters: {
+                    ...defaultData.counters,
+                    ...(parsedData.counters || {}),
+                },
+                clinicSettings: {
+                    ...defaultData.clinicSettings,
+                    ...(parsedData.clinicSettings || {}),
+                }
+            };
+            
+            // Replace the data in localStorage with the sanitized, merged data.
+            localStorage.setItem(DB_KEY, JSON.stringify(mergedData));
+            
+            return Promise.resolve();
+
+        } catch (error) {
+            console.error("Failed to parse or validate backup file:", error);
+            if (error instanceof SyntaxError) {
+                 throw new Error("The selected file is not a valid JSON backup file.");
+            }
+            // Re-throw our custom error or any other error
+            throw error;
+        }
     }
 }
 

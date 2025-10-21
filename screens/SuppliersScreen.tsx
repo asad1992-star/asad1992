@@ -54,12 +54,16 @@ export const SuppliersScreen: React.FC<SuppliersScreenProps> = ({ user }) => {
   
   const handleDeleteSupplier = async (supplier: Supplier) => {
       if (supplier.outstandingBalance !== 0) {
-          alert("Cannot delete supplier with an outstanding balance.");
+          alert("Cannot delete supplier with an outstanding balance. Please clear the balance first.");
           return;
       }
-      if (window.confirm(`Are you sure you want to delete ${supplier.name}?`)) {
-          await db.deleteSupplier(supplier.id);
-          fetchSuppliers();
+      if (window.confirm(`Are you sure you want to delete ${supplier.name}? This action cannot be undone.`)) {
+          try {
+            await db.deleteSupplier(supplier.id);
+            fetchSuppliers();
+          } catch (error: any) {
+            alert(`Error: ${error.message}`);
+          }
       }
   }
 

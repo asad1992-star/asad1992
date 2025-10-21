@@ -57,8 +57,12 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ user }) => {
   const handleDeleteProduct = async (e: React.MouseEvent, product: Product) => {
       e.stopPropagation();
       if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
-          await db.deleteProduct(product.id);
-          fetchProducts();
+          try {
+            await db.deleteProduct(product.id);
+            fetchProducts();
+          } catch (error: any) {
+            alert(`Error: ${error.message}`);
+          }
       }
   }
 

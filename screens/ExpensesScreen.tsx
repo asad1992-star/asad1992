@@ -58,8 +58,12 @@ export const ExpensesScreen: React.FC<{ user: User }> = ({ user }) => {
 
   const handleDeleteExpense = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
-      await db.deleteExpense(id);
-      fetchExpenses();
+      try {
+        await db.deleteExpense(id);
+        fetchExpenses();
+      } catch (error: any) {
+        alert(`Error deleting expense: ${error.message}`);
+      }
     }
   };
 

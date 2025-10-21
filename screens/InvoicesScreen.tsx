@@ -80,9 +80,13 @@ export const InvoicesScreen: React.FC<{ user: User }> = ({ user }) => {
     
     const handleDeleteInvoice = async (invoiceId: string) => {
         if (window.confirm(`Are you sure you want to delete invoice ${invoiceId}? This will revert stock and balance changes.`)) {
-            await db.deleteInvoice(invoiceId);
-            fetchData();
-            eventBus.dispatch('data-changed');
+            try {
+                await db.deleteInvoice(invoiceId);
+                fetchData();
+                eventBus.dispatch('data-changed');
+            } catch (error: any) {
+                alert(`Error deleting invoice: ${error.message}`);
+            }
         }
     }
 

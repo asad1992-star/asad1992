@@ -57,8 +57,12 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({ user }) => {
 
     const handleDeleteTransaction = async (id: string) => {
         if (window.confirm("Are you sure you want to delete this manual transaction?")) {
-            await db.deleteManualTransaction(id);
-            fetchData();
+            try {
+                await db.deleteManualTransaction(id);
+                fetchData();
+            } catch(error: any) {
+                alert(`Error deleting transaction: ${error.message}`);
+            }
         }
     };
     

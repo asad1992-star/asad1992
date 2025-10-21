@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../services/db';
 import type { User, ClinicSettings } from '../types';
 import { Modal } from '../components/Modal';
@@ -12,6 +12,7 @@ export const SettingsScreen: React.FC<{ user: User }> = ({ user }) => {
     const [users, setUsers] = useState<User[]>([]);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
+    const importInputRef = useRef<HTMLInputElement>(null);
 
     const fetchAllData = useCallback(async () => {
         const [clinicSettings, userList] = await Promise.all([
@@ -64,8 +65,12 @@ export const SettingsScreen: React.FC<{ user: User }> = ({ user }) => {
             return;
         }
         if (window.confirm(`Are you sure you want to delete the user "${userToDelete.username}"?`)) {
-            await db.deleteUser(userToDelete.id);
-            fetchAllData();
+            try {
+                await db.deleteUser(userToDelete.id);
+                fetchAllData();
+            } catch (error: any) {
+                alert(`Error deleting user: ${error.message}`);
+            }
         }
     };
 
@@ -98,6 +103,45 @@ export const SettingsScreen: React.FC<{ user: User }> = ({ user }) => {
             console.error('Backup failed:', error);
             alert('Failed to create backup.');
         }
+    };
+
+    const handleImportClick = () => {
+        importInputRef.current?.click();
+    };
+
+    const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!window.confirm("Are you sure you want to import this backup? This will overwrite ALL current data and cannot be undone.")) {
+            if(importInputRef.current) {
+                importInputRef.current.value = "";
+            }
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const content = event.target?.result as string;
+                await db.importData(content);
+                alert("Import successful! The application will now reload.");
+                window.location.reload();
+            } catch (error: any) {
+                alert(`Import failed: ${error.message}`);
+            } finally {
+                if(importInputRef.current) {
+                    importInputRef.current.value = "";
+                }
+            }
+        };
+        reader.onerror = () => {
+            alert("Failed to read the selected file.");
+             if(importInputRef.current) {
+                importInputRef.current.value = "";
+            }
+        };
+        reader.readAsText(file);
     };
 
 
@@ -163,17 +207,40 @@ export const SettingsScreen: React.FC<{ user: User }> = ({ user }) => {
                  {/* Data Management Card */}
                 <div className="bg-white p-6 rounded-lg shadow lg:col-span-2">
                     <h2 className="text-xl font-semibold text-gray-700 border-b pb-3 mb-4">Data Management</h2>
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h3 className="font-semibold text-gray-800">Local Data Backup</h3>
-                            <p className="text-sm text-gray-600 mt-1">Export all application data to a JSON file on your local machine.</p>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h3 className="font-semibold text-gray-800">Local Data Backup</h3>
+                                <p className="text-sm text-gray-600 mt-1">Export all application data to a JSON file on your local machine.</p>
+                            </div>
+                            <button
+                                onClick={handleBackup}
+                                className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 font-semibold"
+                            >
+                                Export Backup
+                            </button>
                         </div>
-                        <button
-                            onClick={handleBackup}
-                            className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 font-semibold"
-                        >
-                            Export Backup
-                        </button>
+                         <div className="border-t pt-4 flex justify-between items-center">
+                            <div>
+                                <h3 className="font-semibold text-gray-800">Import Data from Backup</h3>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    <span className="font-bold text-red-600">Warning:</span> This will replace all current data.
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleImportClick}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold"
+                            >
+                                Import Backup
+                            </button>
+                            <input
+                                type="file"
+                                ref={importInputRef}
+                                onChange={handleFileSelected}
+                                className="hidden"
+                                accept="application/json"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
