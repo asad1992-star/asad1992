@@ -41,6 +41,13 @@
 
   /* --- PROFESSIONAL PRINT TEMPLATE STYLES --- */
   @media print {
+    .print-only {
+        display: block !important;
+    }
+    .no-print, .no-print * {
+        display: none !important;
+    }
+
     /* 1. Page Setup & Hiding Logic */
     @page {
         size: A4;

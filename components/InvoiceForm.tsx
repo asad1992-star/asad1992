@@ -162,9 +162,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, onCancel, invo
     isPurchase ? (
         // Purchase form layout
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            <div className="md:col-span-6">
+            {/* FIX: Moved key to parent div to resolve TS error with generic component */}
+            <div className="md:col-span-6" key={searchKey}>
                 <label className="block text-sm font-medium text-gray-700">Product</label>
-                <AutocompleteSearch<Product> key={searchKey} placeholder="Search Products..." items={products} filterFn={(p, query) => p.name.toLowerCase().includes(query.toLowerCase()) || p.id.toLowerCase().includes(query.toLowerCase())} displayFn={(p) => `${p.name} (${p.id}) - Stock: ${p.stockVials}`} onSelect={setCurrentItem} />
+                <AutocompleteSearch<Product> placeholder="Search Products..." items={products} filterFn={(p, query) => p.name.toLowerCase().includes(query.toLowerCase()) || p.id.toLowerCase().includes(query.toLowerCase())} displayFn={(p) => `${p.name} (${p.id}) - Stock: ${p.stockVials}`} onSelect={setCurrentItem} />
             </div>
             <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Qty (Vials)</label>
@@ -181,9 +182,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, onCancel, invo
     ) : (
         // Sale form layout
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            <div className="md:col-span-8">
+            {/* FIX: Moved key to parent div to resolve TS error with generic component */}
+            <div className="md:col-span-8" key={searchKey}>
                 <label className="block text-sm font-medium text-gray-700">Product</label>
-                <AutocompleteSearch<Product> key={searchKey} placeholder="Search Products..." items={products} filterFn={(p, query) => p.name.toLowerCase().includes(query.toLowerCase()) || p.id.toLowerCase().includes(query.toLowerCase())} displayFn={(p) => `${p.name} (${p.id}) - Stock: ${p.stockVials}`} onSelect={setCurrentItem} />
+                <AutocompleteSearch<Product> placeholder="Search Products..." items={products} filterFn={(p, query) => p.name.toLowerCase().includes(query.toLowerCase()) || p.id.toLowerCase().includes(query.toLowerCase())} displayFn={(p) => `${p.name} (${p.id}) - Stock: ${p.stockVials}`} onSelect={setCurrentItem} />
             </div>
             <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Qty (Vials)</label>
@@ -227,9 +229,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, onCancel, invo
         <div className="p-4 border rounded-lg space-y-2 bg-slate-50">
             <h3 className="font-semibold text-gray-800">Add Medicine Used</h3>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                <div className="md:col-span-6">
+                {/* FIX: Moved key to parent div to resolve TS error with generic component */}
+                <div className="md:col-span-6" key={searchKey}>
                     <label className="block text-sm font-medium text-gray-700">Product</label>
-                    <AutocompleteSearch<Product> key={searchKey} placeholder="Search Products..." items={products} filterFn={(p, query) => p.name.toLowerCase().includes(query.toLowerCase()) || p.id.toLowerCase().includes(query.toLowerCase())} displayFn={(p) => `${p.name} (${p.id})`} onSelect={setCurrentItem}/>
+                    <AutocompleteSearch<Product> placeholder="Search Products..." items={products} filterFn={(p, query) => p.name.toLowerCase().includes(query.toLowerCase()) || p.id.toLowerCase().includes(query.toLowerCase())} displayFn={(p) => `${p.name} (${p.id})`} onSelect={setCurrentItem}/>
                 </div>
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">Dosage{dosageUnit}</label>
