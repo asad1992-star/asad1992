@@ -47,34 +47,43 @@
       print-color-adjust: exact;
     }
 
-    /* Hide everything by default when printing */
-    body * {
-      visibility: hidden;
+    /* Hide all elements designated as screen-only */
+    .no-print {
+      display: none !important;
     }
     
-    /* Only show the designated printable area and its children */
-    .printable-area, .printable-area * {
-      visibility: visible;
+    /* Show elements designated as print-only */
+    .print-only {
+      display: block !important;
     }
-    
-    /* Position the printable area to take over the whole page */
-    .printable-area {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
+
+    /* Reset modal styles to make content take up the full page */
+    body .fixed.inset-0 { /* Modal backdrop */
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    body .modal-content-wrapper { /* Modal panel */
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
     }
     
     /* Watermark Styles */
     .print-watermark {
-      visibility: visible; /* Ensure watermark is not hidden */
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: -1;
-      opacity: 0.1;
+      opacity: 0.1 !important;
       pointer-events: none;
+      z-index: 0;
     }
     .print-watermark img {
       width: 80vw;
