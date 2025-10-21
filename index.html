@@ -41,33 +41,57 @@
 
   /* --- NEW PROFESSIONAL REPORT PRINTING STYLES --- */
   @media print {
-    /* 1. Use the visibility method to hide everything except the designated printable area. */
-    body * {
-        visibility: hidden;
+    /* 1. Use display properties to control visibility. This is more reliable than 'visibility'. */
+    .no-print, .no-print * {
+        display: none !important;
     }
-    .printable-area, .printable-area * {
-        visibility: visible;
+    .print-only {
+        display: block !important;
     }
-    .printable-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: auto;
-    }
-    
-    /* 2. Define page layout and ensure colors are printed. */
-    @page {
-        size: A4;
-        margin: 1.5cm;
-    }
+
+    /* 2. Reset modal and layout styles that interfere with printing. */
     body {
         background: white !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+        margin: 0;
+        padding: 0;
+    }
+    /* When printing from a modal, we want the content to take over the page. */
+    .printable-container-root {
+        position: static !important;
+        background: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        display: block !important; /* Ensure the modal container is visible */
+    }
+    .modal-content-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+    .modal-content-wrapper > .p-6 {
+        padding: 0 !important;
     }
 
-    /* 3. Force containers to expand and remove on-screen styles. */
+    /* 3. The .printable-area is the root for printed content. */
+    .printable-area {
+        position: static; /* Let it flow naturally since we've reset the containers */
+        width: 100%;
+        height: auto;
+    }
+    
+    /* 4. Define page layout. */
+    @page {
+        size: A4;
+        margin: 1.5cm;
+    }
+    
+    /* 5. Force containers to expand and remove on-screen styles. */
     .overflow-x-auto, .overflow-y-auto {
         overflow: visible !important;
     }
@@ -80,7 +104,7 @@
         border: none !important;
     }
     
-    /* 4. Style tables for professional reports. */
+    /* 6. Style tables for professional reports. */
     table {
         width: 100% !important;
         min-width: 0 !important;
@@ -106,7 +130,7 @@
         display: none !important;
     }
 
-    /* 5. Style the watermark correctly. */
+    /* 7. Style the watermark correctly. */
     .print-watermark {
         position: fixed;
         z-index: -1;
