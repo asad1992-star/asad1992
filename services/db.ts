@@ -50,6 +50,7 @@ const isWithinDateRange = (dateStr: string, dateRange?: { startDate?: string, en
 
 
 class DBService {
+    private isInitialized = false;
     private data: DBData = {
         products: [],
         customers: [],
@@ -67,12 +68,14 @@ class DBService {
     };
 
     async init() {
+        if (this.isInitialized) return;
         const savedData = localStorage.getItem(DB_KEY);
         if (savedData) {
             this.data = JSON.parse(savedData);
         }
         // Always run seed/migration logic to handle schema updates
         this.seedData();
+        this.isInitialized = true;
     }
 
     private save() {
@@ -198,6 +201,23 @@ class DBService {
     async getExpenses(): Promise<Expense[]> { return [...this.data.expenses]; }
     async getUsers(): Promise<User[]> { return [...this.data.users]; }
     async getClinicSettings(): Promise<ClinicSettings> { return {...this.data.clinicSettings}; }
+    
+    getClinicSettingsSync(): ClinicSettings {
+        if (!this.isInitialized) {
+            // This is a fallback for the print race condition.
+            // It's a synchronous, potentially slow read, but necessary for printing.
+            console.warn("getClinicSettingsSync called before DB initialization. Reading from localStorage directly.");
+            const savedData = localStorage.getItem(DB_KEY);
+            if (savedData) {
+                const tempData: DBData = JSON.parse(savedData);
+                // Return a valid object even if settings are missing from old backups
+                return tempData.clinicSettings || this.data.clinicSettings;
+            }
+        }
+        // If initialized or no saved data, return the in-memory version.
+        return {...this.data.clinicSettings};
+    }
+
     async getUserByUsername(username: string): Promise<User | undefined> {
         return this.data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
     }

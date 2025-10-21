@@ -34,9 +34,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({ isOpen, on
       {/* This is the on-screen preview. It's hidden during printing. */}
       <div className="no-print">
         <div className="max-h-[60vh] overflow-y-auto">
-            <PrintLayout title={title}>
-              {children}
-            </PrintLayout>
+            {children}
         </div>
         <div className="pt-4 mt-4 border-t flex justify-end gap-4">
             <button

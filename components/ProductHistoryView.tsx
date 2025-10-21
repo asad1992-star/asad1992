@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/db';
 import type { Product, ProductHistoryEntry } from '../types';
@@ -66,16 +65,6 @@ export const ProductHistoryView: React.FC<ProductHistoryViewProps> = ({ product 
   }, [product.id]);
   
   const handlePrint = () => {
-    const modalWrapper = document.querySelector('.product-history-modal');
-    if (!modalWrapper) return;
-
-    const handleAfterPrint = () => {
-      modalWrapper.classList.remove('modal-print-area');
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-
-    window.addEventListener('afterprint', handleAfterPrint);
-    modalWrapper.classList.add('modal-print-area');
     window.print();
   };
 
@@ -98,11 +87,9 @@ export const ProductHistoryView: React.FC<ProductHistoryViewProps> = ({ product 
         </div>
 
         <div className="no-print">
-            <PrintLayout title={`History for ${product.name}`}>
-                <div className="max-h-[60vh] overflow-y-auto">
-                    {contentToRender}
-                </div>
-            </PrintLayout>
+            <div className="max-h-[60vh] overflow-y-auto">
+                {contentToRender}
+            </div>
             <div className="pt-4 mt-4 border-t flex justify-end">
                 <button
                 onClick={handlePrint}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { InvoiceWithDetails } from '../types';
 import { PrinterIcon } from './icons/PrinterIcon';
@@ -8,16 +7,6 @@ export const InvoiceDetailView: React.FC<{ invoice: InvoiceWithDetails }> = ({ i
   const party = invoice.customer || invoice.supplier;
 
   const handlePrint = () => {
-    const modalWrapper = document.querySelector('.invoice-detail-modal-wrapper');
-    if (!modalWrapper) return;
-
-    const handleAfterPrint = () => {
-      modalWrapper.classList.remove('modal-print-area');
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-
-    window.addEventListener('afterprint', handleAfterPrint);
-    modalWrapper.classList.add('modal-print-area');
     window.print();
   };
   
@@ -99,7 +88,7 @@ export const InvoiceDetailView: React.FC<{ invoice: InvoiceWithDetails }> = ({ i
     <div>
       <div className="print-only"><PrintLayout title={`Invoice #${invoice.id}`}>{invoiceBody}</PrintLayout></div>
       <div className="no-print">
-        <PrintLayout title={`Invoice #${invoice.id}`}><div className="max-h-[60vh] overflow-y-auto">{invoiceBody}</div></PrintLayout>
+        <div className="max-h-[60vh] overflow-y-auto">{invoiceBody}</div>
          <div className="pt-4 mt-4 border-t flex justify-end">
           <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-semibold flex items-center gap-2"><PrinterIcon className="h-5 w-5" />Print Invoice</button>
         </div>

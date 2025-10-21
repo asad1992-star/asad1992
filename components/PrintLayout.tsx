@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { db } from '../services/db';
 import type { ClinicSettings } from '../types';
 import { VetIcon } from './icons/VetIcon';
@@ -9,27 +9,24 @@ interface PrintLayoutProps {
 }
 
 export const PrintLayout: React.FC<PrintLayoutProps> = ({ children, title }) => {
-    const [settings, setSettings] = useState<ClinicSettings | null>(null);
-
-    useEffect(() => {
-        const fetchSettings = async () => {
-            const data = await db.getClinicSettings();
-            setSettings(data);
-        };
-        fetchSettings();
-    }, []);
+    const settings = db.getClinicSettingsSync();
 
     return (
         <div>
+            {/* Watermark element - visible only on print */}
+            <div className="print-watermark">
+                {settings?.logo && <img src={settings.logo} alt="Clinic Watermark" />}
+            </div>
+
             <header className="print-header">
                 {/* Professional Header */}
                 <div className="flex justify-between items-start border-b pb-4 mb-4">
                     {/* Left: Logo */}
-                    <div className="w-1/4 flex items-center">
+                    <div className="w-1/4">
                          {settings?.logo ? (
-                            <img src={settings.logo} alt="Clinic Logo" className="h-12 w-auto max-w-full" />
+                            <img src={settings.logo} alt="Clinic Logo" className="h-16 w-auto max-w-full" />
                         ) : (
-                            <VetIcon className="h-12 w-12 text-blue-600" />
+                            <VetIcon className="h-16 w-16 text-blue-600" />
                         )}
                     </div>
                     

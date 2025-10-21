@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/db';
 import type { Customer, PartyHistory, Invoice, Payment } from '../types';
@@ -103,16 +102,6 @@ export const CustomerHistoryView: React.FC<CustomerHistoryViewProps> = ({ custom
   }, [customer.id, startDate, endDate, activeTab]);
   
   const handlePrint = () => {
-    const modalWrapper = document.querySelector('.customer-history-modal');
-    if (!modalWrapper) return;
-
-    const handleAfterPrint = () => {
-      modalWrapper.classList.remove('modal-print-area');
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-
-    window.addEventListener('afterprint', handleAfterPrint);
-    modalWrapper.classList.add('modal-print-area');
     window.print();
   };
 
@@ -142,24 +131,22 @@ export const CustomerHistoryView: React.FC<CustomerHistoryViewProps> = ({ custom
         </div>
         
         <div className="no-print">
-            <PrintLayout title={`History for ${customer.name}`}>
-              <div className="flex border-b mb-4">
-                  <button onClick={() => setActiveTab('history')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'history' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>History</button>
-                  <button onClick={() => setActiveTab('ledger')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'ledger' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>Ledger</button>
-              </div>
-              <div className="p-2 mb-4 bg-gray-50 border rounded-lg grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
-                  <label className="text-xs font-medium text-gray-700">Start Date:
-                      <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded-md text-gray-900 text-sm" />
-                  </label>
-                  <label className="text-xs font-medium text-gray-700">End Date:
-                      <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded-md text-gray-900 text-sm" />
-                  </label>
-                  <button onClick={() => { setStartDate(''); setEndDate(''); }} className="bg-gray-200 text-gray-800 px-3 py-1.5 rounded-md hover:bg-gray-300 text-xs mt-3 sm:mt-0">Clear Dates</button>
-              </div>
-              <div className="max-h-[50vh] overflow-y-auto">
-                {renderContent()}
-              </div>
-            </PrintLayout>
+            <div className="flex border-b mb-4">
+                <button onClick={() => setActiveTab('history')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'history' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>History</button>
+                <button onClick={() => setActiveTab('ledger')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'ledger' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>Ledger</button>
+            </div>
+            <div className="p-2 mb-4 bg-gray-50 border rounded-lg grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+                <label className="text-xs font-medium text-gray-700">Start Date:
+                    <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded-md text-gray-900 text-sm" />
+                </label>
+                <label className="text-xs font-medium text-gray-700">End Date:
+                    <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded-md text-gray-900 text-sm" />
+                </label>
+                <button onClick={() => { setStartDate(''); setEndDate(''); }} className="bg-gray-200 text-gray-800 px-3 py-1.5 rounded-md hover:bg-gray-300 text-xs mt-3 sm:mt-0">Clear Dates</button>
+            </div>
+            <div className="max-h-[50vh] overflow-y-auto">
+              {renderContent()}
+            </div>
             <div className="pt-4 mt-4 border-t flex justify-end">
                 <button
                 onClick={handlePrint}
