@@ -1,4 +1,5 @@
 import { db } from './db';
+import { eventBus } from './eventBus';
 
 const LAST_BACKUP_KEY = 'vetclinic_last_auto_backup';
 const BACKUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -13,10 +14,10 @@ class BackupService {
         // Check immediately on start, in case the app was closed for a long time
         this.checkForAutoBackup();
         
-        // Then check periodically (e.g., every hour) to see if it's time
+        // Then check periodically (e.g., every minute) to see if it's time
         this.backupIntervalId = window.setInterval(() => {
             this.checkForAutoBackup();
-        }, 60 * 60 * 1000); 
+        }, 60 * 1000); 
     }
 
     public stop() {
@@ -26,34 +27,44 @@ class BackupService {
         }
     }
 
+    public getLastBackupTimestamp(): number | null {
+        const timestamp = localStorage.getItem(LAST_BACKUP_KEY);
+        return timestamp ? parseInt(timestamp, 10) : null;
+    }
+
     private async checkForAutoBackup() {
-        const lastBackupTimestamp = localStorage.getItem(LAST_BACKUP_KEY);
+        const lastBackupTimestamp = this.getLastBackupTimestamp();
         const now = new Date().getTime();
 
-        if (!lastBackupTimestamp || (now - parseInt(lastBackupTimestamp, 10)) > BACKUP_INTERVAL) {
+        if (!lastBackupTimestamp || (now - lastBackupTimestamp) > BACKUP_INTERVAL) {
             console.log('[BackupService] Triggering automatic daily backup.');
-            await this.performAutoBackup();
+            await this.performBackup();
+        } else {
+            // Dispatch an event so the countdown can stay in sync if it's not time yet
+            eventBus.dispatch('backup-update', { lastBackup: lastBackupTimestamp });
         }
     }
 
-    private async performAutoBackup() {
+    public async performBackup() {
         try {
             const jsonData = await db.exportData();
             const blob = new Blob([jsonData], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
+            const date = new Date().toISOString().split('T')[0];
             a.href = url;
-            // Use a consistent name for easier overwriting by the user in their downloads folder
-            a.download = `vetclinic_auto_backup.json`;
+            a.download = `vetclinic_backup_${date}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            localStorage.setItem(LAST_BACKUP_KEY, new Date().getTime().toString());
-            console.log('[BackupService] Automatic backup download initiated.');
+            const now = new Date().getTime();
+            localStorage.setItem(LAST_BACKUP_KEY, now.toString());
+            eventBus.dispatch('backup-update', { lastBackup: now });
+            console.log('[BackupService] Backup download initiated.');
         } catch (error) {
-            console.error('[BackupService] Automatic backup failed:', error);
+            console.error('[BackupService] Backup failed:', error);
         }
     }
 }
