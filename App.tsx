@@ -4,6 +4,7 @@ import type { User } from './types';
 import { LoginScreen } from './screens/LoginScreen';
 import { Layout } from './components/Layout';
 import { syncService } from './services/syncService';
+import { backupService } from './services/backupService';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +24,7 @@ function App() {
     };
     initializeDB();
     syncService.startSync();
+    backupService.start();
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
